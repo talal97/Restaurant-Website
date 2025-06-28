@@ -32,6 +32,11 @@ export default function EditCategoryPage() {
   });
 
   useEffect(() => {
+    if (!params.id) {
+      router.push('/admin/categories');
+      return;
+    }
+    
     const categoryId = params.id as string;
     const foundCategory = categories.find(c => c.id === categoryId);
     

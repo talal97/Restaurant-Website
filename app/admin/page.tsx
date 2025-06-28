@@ -53,7 +53,7 @@ export default function AdminDashboard() {
     },
     {
       name: 'Create Delivery Zone',
-      href: '/admin/zones/new',
+      href: '/admin/delivery-zones/new',
       icon: MapPinIcon,
       color: 'bg-green-500 hover:bg-green-600'
     },
