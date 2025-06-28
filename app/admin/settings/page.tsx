@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useStore } from '@/store/useStore';
+import { mockSettings } from '@/data/mockData';
 import {
   PhotoIcon,
   XMarkIcon,
@@ -17,21 +18,27 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState('');
-  const [logoPreview, setLogoPreview] = useState<string | null>(settings.logo);
-  const [bannerPreview, setBannerPreview] = useState<string | null>(settings.bannerImage);
+  const [logoPreview, setLogoPreview] = useState<string | null>(settings?.logo || null);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(settings?.bannerImages?.[0] || null);
   
   const [formData, setFormData] = useState({
-    siteName: settings.siteName,
-    logo: settings.logo,
-    bannerImage: settings.bannerImage,
-    whatsappNumber: settings.whatsappNumber,
-    currency: settings.currency,
-    deliveryFee: settings.deliveryFee.toString(),
-    minimumOrder: settings.minimumOrder.toString(),
-    taxRate: settings.taxRate.toString(),
-    isDeliveryEnabled: settings.isDeliveryEnabled,
-    isPickupEnabled: settings.isPickupEnabled
+    siteName: settings?.siteName || '',
+    logo: settings?.logo || '',
+    bannerImage: settings?.bannerImages?.[0] || '',
+    whatsappNumber: settings?.whatsappNumber || '',
+    currency: settings?.currency || 'USD',
+    deliveryFee: settings?.defaultDeliveryFee?.toString() || '0',
+    minimumOrder: '0',
+    taxRate: settings?.taxRate?.toString() || '0',
+    isDeliveryEnabled: true,
+    isPickupEnabled: true
   });
+
+  useEffect(() => {
+    if (!settings) {
+      setSettings(mockSettings);
+    }
+  }, [settings, setSettings]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -58,11 +65,7 @@ export default function SettingsPage() {
       newErrors.deliveryFee = 'Please enter a valid delivery fee';
     }
 
-    if (!formData.minimumOrder.trim()) {
-      newErrors.minimumOrder = 'Minimum order is required';
-    } else if (isNaN(Number(formData.minimumOrder)) || Number(formData.minimumOrder) < 0) {
-      newErrors.minimumOrder = 'Please enter a valid minimum order amount';
-    }
+
 
     if (!formData.taxRate.trim()) {
       newErrors.taxRate = 'Tax rate is required';
@@ -86,16 +89,15 @@ export default function SettingsPage() {
 
     try {
       const updatedSettings = {
+        id: settings?.id || '1',
         siteName: formData.siteName.trim(),
         logo: formData.logo.trim(),
-        bannerImage: formData.bannerImage.trim(),
+        bannerImages: formData.bannerImage.trim() ? [formData.bannerImage.trim()] : settings?.bannerImages || [],
         whatsappNumber: formData.whatsappNumber.trim(),
         currency: formData.currency,
-        deliveryFee: Number(formData.deliveryFee),
-        minimumOrder: Number(formData.minimumOrder),
+        defaultDeliveryFee: Number(formData.deliveryFee),
         taxRate: Number(formData.taxRate),
-        isDeliveryEnabled: formData.isDeliveryEnabled,
-        isPickupEnabled: formData.isPickupEnabled
+        updatedAt: new Date()
       };
 
       setSettings(updatedSettings);
@@ -371,7 +373,7 @@ export default function SettingsPage() {
             <h2 className="text-lg font-semibold text-gray-900">Order Settings</h2>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="deliveryFee" className="block text-sm font-medium text-gray-700 mb-2">
                 Default Delivery Fee ({formData.currency}) *
@@ -387,23 +389,6 @@ export default function SettingsPage() {
                 placeholder="0.000"
               />
               {errors.deliveryFee && <p className="text-red-600 text-sm mt-1">{errors.deliveryFee}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="minimumOrder" className="block text-sm font-medium text-gray-700 mb-2">
-                Minimum Order ({formData.currency}) *
-              </label>
-              <input
-                type="number"
-                id="minimumOrder"
-                step="0.001"
-                min="0"
-                value={formData.minimumOrder}
-                onChange={(e) => handleInputChange('minimumOrder', e.target.value)}
-                className={`input-field ${errors.minimumOrder ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}`}
-                placeholder="0.000"
-              />
-              {errors.minimumOrder && <p className="text-red-600 text-sm mt-1">{errors.minimumOrder}</p>}
             </div>
 
             <div>
@@ -425,31 +410,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-            <div>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.isDeliveryEnabled}
-                  onChange={(e) => handleInputChange('isDeliveryEnabled', e.target.checked)}
-                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                />
-                <span className="ml-2 text-sm text-gray-700">Enable delivery service</span>
-              </label>
-            </div>
 
-            <div>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.isPickupEnabled}
-                  onChange={(e) => handleInputChange('isPickupEnabled', e.target.checked)}
-                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                />
-                <span className="ml-2 text-sm text-gray-700">Enable pickup service</span>
-              </label>
-            </div>
-          </div>
         </div>
 
         {/* Submit */}

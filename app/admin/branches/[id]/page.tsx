@@ -26,7 +26,7 @@ const DAYS = [
 export default function EditBranchPage() {
   const router = useRouter();
   const params = useParams();
-  const { branches, setBranches, deliveryZones } = useStore();
+  const { branches, setBranches, zones: deliveryZones } = useStore();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [branch, setBranch] = useState<Branch | null>(null);
@@ -189,7 +189,7 @@ export default function EditBranchPage() {
     );
   }
 
-  const branchZones = deliveryZones.filter(zone => zone.branchId === branch.id);
+  const branchZones = deliveryZones?.filter(zone => zone.branchId === branch.id) || [];
 
   return (
     <div className="space-y-6">
